@@ -1,0 +1,11 @@
+{% extends 'base/registration.html' %}
+
+{% load static %}
+
+{% block title %}Logout{% endblock %}
+
+{% block content%}
+<h2 class="text-center">Logout successufly</h2>
+<a href="{% url 'accounts:login' %}" class="text-center">login again</a>
+<a href="{% url 'accounts:home' %}" class="href">home</a>
+{% endblock %}

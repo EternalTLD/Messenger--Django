@@ -1,0 +1,7 @@
+{{request.user.username}}
+<a href="{% url 'accounts:signup' %}" class="href">signup</a>
+<a href="{% url 'accounts:login' %}" class="href">login</a>
+<a href="{% url 'accounts:logout' %}" class="href">logout</a>
+<a href="{% url 'accounts:password_change' %}" class="href">password_change</a>
+<a href="{% url 'accounts:password_change_done' %}" class="href">password_change_done</a>
+<a href="{% url 'accounts:password_reset' %}" class="href">password_reset</a>
