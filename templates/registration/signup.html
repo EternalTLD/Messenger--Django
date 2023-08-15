@@ -8,16 +8,50 @@
 <form action="{% url 'accounts:signup' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
-        <input type="username" class="form-control" id="email" placeholder="Enter username" name="username">
+        <input name="username" type="username" class="form-control" id="email" placeholder="Enter username" value="{{ form.username.value|default_if_none:'' }}">
+        <p>{{form.username.help_text|safe}}</p>
+        {% if 'username' in form.errors %}
+            {% for error in form.username.errors %}
+                <div class="alert alert-danger alert-dismissable">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
     <div class="form-group">
-        <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+        <input name="email" type="email" class="form-control" id="email" placeholder="Enter email" value="{{ form.email.value|default_if_none:'' }}">
+        {% if 'email' in form.errors %}
+            {% for error in form.email.errors %}
+                <div class="alert alert-danger alert-dismissable">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
     <div class="form-group">
-        <input type="password" class="form-control" id="email" placeholder="Enter password" name="password1">
+        <input name="password1" type="password" class="form-control" id="email" placeholder="Enter password">
+        <p>{{form.passowrd1.help_text}}</p>
+        {% if 'password1' in form.errors %}
+            {% for error in form.password1.errors %}
+                <div class="alert alert-danger alert-dismissable">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
     <div class="form-group">
-        <input type="password" class="form-control" id="email" placeholder="Repeat password" name="password2">
+        <input name="password2" type="password" class="form-control" id="email" placeholder="Repeat password">
+        {% if 'password2' in form.errors %}
+            {% for error in form.password2.errors %}
+                <div class="alert alert-danger alert-dismissable">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
     <button type="submit" id="button" class="btn btn-primary deep-purple btn-block ">Submit</button>
     <br>
