@@ -23,4 +23,6 @@ class SignUpView(CreateView):
             password = user_form.cleaned_data.get('password1')
             user.set_password(password)
             user.save()
-            return HttpResponseRedirect(reverse('accounts:login'))
+            return render(request, 'registration/signup.html', {'user': user})
+        else:
+            return render(request, 'registration/signup.html', {'form': user_form})
