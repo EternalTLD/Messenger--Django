@@ -14,10 +14,3 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user} profile'
-    
-class FriendRequest(models.Model):
-    user_from = models.ForeignKey(User)
-    user_to = models.ForeignKey(User)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    status = models.CharField()
-
