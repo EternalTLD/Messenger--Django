@@ -1,7 +1,7 @@
 from django.urls import path
 
 
-app_name = 'contacts'
+app_name = 'profiles'
 
 urlpatterns = [
 
