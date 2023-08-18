@@ -113,6 +113,8 @@ class Friend(models.Model):
     )
     created_at = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
 
+    objects = FriendshipManager()
+
     class Meta:
         verbose_name = 'Друг'
         verbose_name_plural = 'Друзья'
