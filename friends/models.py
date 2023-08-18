@@ -99,28 +99,48 @@ class FriendshipManager(models.Manager):
 
 
 class Friend(models.Model):
-    form_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='От пользователя')
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='К пользователю')
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='friends', 
+        verbose_name='От пользователя'
+    )
+    to_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='_friends',
+        verbose_name='К пользователю'
+    )
     created_at = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
 
     class Meta:
         verbose_name = 'Друг'
         verbose_name_plural = 'Друзья'
-        unique_together = ('form_user', 'to_user')
+        unique_together = ('from_user', 'to_user')
     
     def __str__(self) -> str:
-        return f'{self.form_user} друг {self.to_user}'
+        return f'{self.from_user} друг {self.to_user}'
     
     def save(self, *args, **kwargs) -> None:
-        if self.form_user == self.to_user:
+        if self.from_user == self.to_user:
             raise ValidationError('Нельзя добавить в друзья самого себя')
         return super().save(*args, **kwargs)
 
 class FriendshipRequest(models.Model):
-    from_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='От пользователя')
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='К пользователю')
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='friendship_requests_sent',
+        verbose_name='От пользователя'
+    )
+    to_user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='friendship_requests_recived',
+        verbose_name='К пользователю'
+    )
     message = models.TextField(blank=True, verbose_name='Сообщение')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    created_at = models.DateTimeField(default=timezone.now, verbose_name='Дата создания')
     rejected_at = models.DateTimeField(blank=True, null=True, verbose_name='Дата отклонения')
 
     class Meta:
@@ -135,7 +155,7 @@ class FriendshipRequest(models.Model):
         """Accept friendship request"""
         Friend.objects.create(from_user=self.from_user, to_user=self.to_user)
         Friend.objects.create(from_user=self.to_user, to_user=self.from_user)
-        
+
         #Delete request
         self.delete()
 
