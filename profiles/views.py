@@ -21,18 +21,19 @@ class ProfileEditView(View):
     template_name = 'profiles/profile_edit.html'
 
     def get(self, request, *args, **kwargs):
-        user_form = self.user_form(instance=request.user)
-        profile_form = self.profile_form(instance=request.user.profile)
-        return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
+        user_form = UserEditForm(instance=request.user)
+        profile_form = ProfileEditForm(instance=request.user.profile)
+        context = {'user_form': user_form, 'profile_form': profile_form}
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-        user_form = self.user_form(instance=request.user, 
+        user_form = UserEditForm(instance=request.user, 
                                    data=request.POST)
-        profile_form = self.profile_form(instance=request.user.profile,
+        profile_form = ProfileEditForm(instance=request.user.profile,
                                          data=request.POST,
                                          files=request.FILES)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-
-        return render(request, self.template_name, {'user_form': user_form, 'profile_form': profile_form})
+        context = {'user_form': user_form, 'profile_form': profile_form}
+        return render(request, 'profiles/profile_edit.html', context)
