@@ -170,3 +170,69 @@ class FriendshipRequest(models.Model):
         self.rejected_at = timezone.now()
         self.save()
         return True
+    
+class BlockManager(models.Manager):
+    """Block manager"""
+
+    def block(self, from_user, to_user):
+        if from_user == to_user:
+            raise ValidationError('Нельзя заблокировать самого себя')
+        
+        if self.is_blocked(from_user, to_user):
+            raise ValidationError('Пользователь уже заблокирован')
+        
+        block = Block.objects.create(from_user=from_user, to_user=to_user)
+        block.save()
+        return block
+    
+    def unblock(self, from_user, to_user):
+        try:
+            block = Block.objects.filter(from_user=from_user, to_user=to_user)
+            if block:
+                block.delete()
+                return True
+            else:
+                return False
+            
+        except Block.DoesNotExist:
+            return False
+    
+    def blocked_users(self, user):
+        qs = Block.objects.filter(from_user=user).select_related('to_user')
+        blocked_users = list(qs)
+        return blocked_users
+    
+    def is_blocked(self, user1, user2):
+        if Block.objects.filter(from_user__in=[user1, user2], to_user__in=[user1, user2]).exists():
+            return True
+        return False
+
+class Block(models.Model):
+    from_user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='black_list',
+        verbose_name='Заблокировавший'
+    )
+    to_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='in_black_list',
+        verbose_name='Заблокированный'
+    )
+    created_at = models.DateTimeField(default=timezone.now, verbose_name='Дата добавления')
+
+    objects = BlockManager()
+
+    class Meta:
+        verbose_name = 'Заблокированный пользователь'
+        verbose_name_plural = 'Заблокированные пользователи'
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self) -> str:
+        return f'{self.from_user} заблокировал {self.to_user}'
+    
+    def save(self, *args, **kwargs) -> None:
+        if self.from_user == self.to_user:
+            raise ValidationError('Пользователь не может заблокировать сам себя')
+        return super().save(*args, **kwargs)
