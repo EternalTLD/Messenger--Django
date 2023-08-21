@@ -6,6 +6,7 @@ from django.views.generic.edit import CreateView
 from django.contrib.auth import get_user_model
 
 from .forms import SignUpForm
+from profiles.models import Profile
 
 
 User = get_user_model()
@@ -19,10 +20,8 @@ class SignUpView(CreateView):
         user_form = SignUpForm(request.POST)
 
         if user_form.is_valid():
-            user = user_form.save(commit=False)
-            password = user_form.cleaned_data.get('password1')
-            user.set_password(password)
-            user.save()
-            return render(request, 'registration/signup.html', {'user': user})
-        else:
-            return render(request, 'registration/signup.html', {'form': user_form})
+            user = user_form.save()
+            Profile.objects.create(user=user)
+            return HttpResponseRedirect(reverse('accounts:login'))
+        
+        return render(request, 'registration/signup.html', {'form': user_form})

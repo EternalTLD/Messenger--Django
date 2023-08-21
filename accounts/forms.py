@@ -44,6 +44,8 @@ class SignUpForm(UserCreationForm):
         user = super(UserCreationForm, self).save(commit=False)
         user.username = self.cleaned_data.get('username')
         user.email = self.cleaned_data.get('email')
+        password = self.cleaned_data.get('password1')
+        user.set_password(password)
         if commit:
             user.save()
         return user

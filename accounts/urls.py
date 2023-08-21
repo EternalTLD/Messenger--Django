@@ -4,13 +4,12 @@ from django.contrib.auth.views import (LoginView, LogoutView, PasswordChangeView
                                        PasswordResetDoneView, PasswordResetConfirmView,
                                        PasswordResetCompleteView)
 
-from .views import SignUpView, home
+from .views import SignUpView
 
 
 app_name = 'accounts'
 
 urlpatterns = [
-    path('home/', home, name='home'),
     path('signup/', SignUpView.as_view(), name='signup'),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
