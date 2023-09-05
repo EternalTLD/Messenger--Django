@@ -1,45 +1,39 @@
-{% extends 'base/registration.html' %}
+{% extends 'base/base.html' %}
 
 {% load static %}
 
 {% block title %}Login{% endblock %}
 
 {% block content%}
-<h2 class="text-center">Login</h2>
-<br>
-<form action="{% url 'accounts:login' %}" method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        <input type="username" class="form-control" id="email" placeholder="Enter username" name="username" value="{{ form.username.value|default_if_none:'' }}">
-        {% if 'username' in form.errors %}
-            {% for error in form.username.errors %}
-                <div class="alert alert-danger alert-dismissable">
-                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                    <strong>{{ error|escape }}</strong>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-    <div class="form-group">
-        <input type="password" class="form-control" id="email" placeholder="Enter password" name="password">
-        {% if 'password' in form.errors %}
-            {% for error in form.password.errors %}
-                <div class="alert alert-danger alert-dismissable">
-                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                    <strong>{{ error|escape }}</strong>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-    <button type="submit" id="button" class="btn btn-primary deep-purple btn-block ">Submit</button>
+<div class="card-body">
+    <h2 class="text-center">Login</h2>
     <br>
-    <br>
-    <div id="btn" class="text-center">
-        <button type="button" class="btn btn-primary btn-circle btn-sm"><i class="fa fa-facebook"></i></button>
-        <button type="button" class="btn btn-danger btn-circle btn-sm"><i class="fa fa-google"></i></button>
-        <button type="button" class="btn btn-info btn-circle btn-sm"><i class="fa fa-twitter"></i></button>
-    </div>
-    <input type="hidden" name="next" value="{{ next }}">
-</form>
-<a href="{% url 'accounts:home' %}" class="href">home</a>
+    <form action="{% url 'accounts:login' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="username" class="form-control" id="email" placeholder="Enter username" name="username" value="{{ form.username.value|default_if_none:'' }}">
+            {% if 'username' in form.errors %}
+                {% for error in form.username.errors %}
+                    <div class="alert alert-danger alert-dismissable">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" id="email" placeholder="Enter password" name="password">
+            {% if 'password' in form.errors %}
+                {% for error in form.password.errors %}
+                    <div class="alert alert-danger alert-dismissable">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <button type="submit" id="button" class="btn btn-primary deep-purple btn-block ">Submit</button>
+        <input type="hidden" name="next" value="{{ next }}">
+    </form>
+</div>
 {% endblock %}
