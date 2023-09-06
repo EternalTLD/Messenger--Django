@@ -1,16 +1,8 @@
 {% extends 'base/base.html' %}
 
 {% block content %}
-
-    <div class="p-2 input-group">
-        <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-        <button type="button" class="btn btn-outline-primary">search</button>
-    </div>
-    <div class="p-3 border">
-        Reusult
-    </div>
-    
-    <div class="overflow-auto pt-3 pe-3" data-mdb-perfect-scrollbar="true" style="position: relative; height: 370px">
+<div class="d-flex flex-column align-self-start">
+    <div id="friends-list" class="overflow-auto p-1 pt-3 pe-3" data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px">
         {% for user in users %}
             <div class="p-3 bg-light border d-flex flex-row">
                 <div class="d-flex align-self-center">
@@ -31,5 +23,10 @@
             </div>
         {% endfor %}
     </div>
+    <div class="p-3 mb-auto text-muted d-flex justify-content-start align-items-center bg-dark">
+        <input type="text" class="form-control form-control-lg" id="new-friend-search-input">
+        <button id="new-friend-search" class="btn btn-outline-primary btn-sm" style="margin: 0px 0px 0px 5px;">Поиск</button>
+    </div>
+</div>
     
 {% endblock %}
