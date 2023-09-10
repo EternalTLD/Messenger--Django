@@ -1,5 +1,4 @@
-from typing import Any
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.generic.edit import CreateView
@@ -15,7 +14,7 @@ class SignUpView(CreateView):
     form_class = SignUpForm
     template_name = 'registration/signup.html'
 
-    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+    def post(self, request, *args, **kwargs):
         user_form = SignUpForm(request.POST)
 
         if user_form.is_valid():
