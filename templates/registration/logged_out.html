@@ -1,11 +1,9 @@
 {% extends 'base/base.html' %}
 
-{% load static %}
-
 {% block title %}Logout{% endblock %}
 
 {% block content%}
-    <div class="d-flex flex-column align-items-center">
+    <div class="card-body d-flex flex-column align-items-center">
         <h2 class="text-center">Вы вышли из аккаунта!</h2>
         <div class="d-flex justify-content-center">
             <a href="{% url 'accounts:login' %}" class="text-center">Войти снова</a>
