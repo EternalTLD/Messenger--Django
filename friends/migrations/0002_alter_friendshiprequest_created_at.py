@@ -5,15 +5,16 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('friends', '0001_initial'),
+        ("friends", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='friendshiprequest',
-            name='created_at',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Дата создания'),
+            model_name="friendshiprequest",
+            name="created_at",
+            field=models.DateTimeField(
+                default=django.utils.timezone.now, verbose_name="Дата создания"
+            ),
         ),
     ]

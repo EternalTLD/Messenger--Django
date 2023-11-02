@@ -7,25 +7,54 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('friends', '0002_alter_friendshiprequest_created_at'),
+        ("friends", "0002_alter_friendshiprequest_created_at"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Block',
+            name="Block",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Дата добавления')),
-                ('from_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='black_list', to=settings.AUTH_USER_MODEL, verbose_name='Заблокировавший')),
-                ('to_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='_black_list', to=settings.AUTH_USER_MODEL, verbose_name='Заблокированный')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        verbose_name="Дата добавления",
+                    ),
+                ),
+                (
+                    "from_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="black_list",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Заблокировавший",
+                    ),
+                ),
+                (
+                    "to_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="_black_list",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Заблокированный",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Заблокированный пользователь',
-                'verbose_name_plural': 'Заблокированные пользователи',
-                'unique_together': {('from_user', 'to_user')},
+                "verbose_name": "Заблокированный пользователь",
+                "verbose_name_plural": "Заблокированные пользователи",
+                "unique_together": {("from_user", "to_user")},
             },
         ),
     ]
