@@ -9,16 +9,17 @@ from .forms import SignUpForm
 
 User = get_user_model()
 
+
 class SignUpView(CreateView):
     model = User
     form_class = SignUpForm
-    template_name = 'registration/signup.html'
+    template_name = "registration/signup.html"
 
     def post(self, request, *args, **kwargs):
         user_form = SignUpForm(request.POST)
 
         if user_form.is_valid():
             user_form.save()
-            return HttpResponseRedirect(reverse('accounts:login'))
-        
-        return render(request, 'registration/signup.html', {'form': user_form})
+            return HttpResponseRedirect(reverse("accounts:login"))
+
+        return render(request, "registration/signup.html", {"form": user_form})
