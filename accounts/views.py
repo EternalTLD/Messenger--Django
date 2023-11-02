@@ -7,11 +7,8 @@ from django.contrib.auth import get_user_model
 from .forms import SignUpForm
 
 
-User = get_user_model()
-
-
 class SignUpView(CreateView):
-    model = User
+    model = get_user_model()
     form_class = SignUpForm
     template_name = "registration/signup.html"
 
