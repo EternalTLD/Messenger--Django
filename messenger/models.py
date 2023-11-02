@@ -1,29 +1,55 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.conf import settings
 
-
-User = get_user_model()
 
 class Room(models.Model):
+    DIRECT = "D"
+    GROUP = "G"
+    ROOM_TYPE = [(DIRECT, "Direct"), (GROUP, "Group")]
+
     name = models.CharField(max_length=20, unique=True)
-    participants = models.ManyToManyField(User, blank=False)
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=False, related_name="room_participants"
+    )
+    admin = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.DO_NOTHING,
+        related_name="room_admin",
+    )
+    room_type = models.CharField(max_length=1, choices=ROOM_TYPE, blank=False)
+
+    class Meta:
+        verbose_name = "Room"
+        verbose_name_plural = "Rooms"
 
     def __str__(self) -> str:
-        return self.name
+        if self.room_type == "D":
+            return f"Direct chat room - {self.name}"
+        else:
+            return f"Group chat room - {self.name}"
+
+    @property
+    def members_count(self):
+        return self.participants.count()
+
 
 class Message(models.Model):
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='messages'
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="messages"
     )
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, null=True, related_name="messages"
+    )
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"
+        ordering = ["-timestamp"]
+
     def __str__(self) -> str:
-        return f'Сообщение от {self.author.username}'
-    
-    def last_10_messages(self):
-        return Message.objects.order_by('-timestamp').all()[:10]
+        return f"Message from {self.author.username} | {self.timestamp}"
