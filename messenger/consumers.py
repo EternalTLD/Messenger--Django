@@ -19,19 +19,26 @@ class ChatConsumer(WebsocketConsumer):
         self.room_group_name = None
         self.room = None
         self.user = None
-        self.last_uploaded_message_id = None
-        self.first_uploaded_message_id = None
         self.messages_to_paginate = 10
+
+    def get_start_messages(self):
+        try:
+            self.last_uploaded_message_id = Message.objects.filter(room=self.room).first().id
+            self.first_uploaded_message_id = Message.objects.filter(room=self.room)[
+                self.messages_to_paginate - 1
+            ].id
+        except AttributeError:
+            self.last_uploaded_message_id = None
+            self.first_uploaded_message_id = None
+        except IndexError:
+            self.first_uploaded_message_id = Message.objects.filter(room=self.room).last().id
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"chat_{self.room_name}"
         self.room = Room.objects.get(name=self.room_name)
         self.user = self.scope["user"]
-        self.last_uploaded_message_id = Message.objects.filter(room=self.room)[0].id
-        self.first_uploaded_message_id = Message.objects.filter(room=self.room)[
-            self.messages_to_paginate - 1
-        ].id
+        self.get_start_messages()
 
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name, self.channel_name
@@ -86,23 +93,26 @@ class ChatConsumer(WebsocketConsumer):
         return message
 
     def get_room_messages(self):
-        messages = Message.objects.filter(
-            Q(id__gte=self.first_uploaded_message_id),
-            Q(id__lte=self.last_uploaded_message_id),
-        )
-        messages = [
-            {
-                "author": message.author.username,
-                "content": message.content,
-                "timestamp": datetime.strftime(message.timestamp, "%Y-%m-%d %H:%M"),
-            }
-            for message in messages
-        ]
+        if self.first_uploaded_message_id and self.last_uploaded_message_id:
+            messages = Message.objects.filter(
+                Q(id__gte=self.first_uploaded_message_id),
+                Q(id__lte=self.last_uploaded_message_id),
+                room = self.room
+            )
+            messages = [
+                {
+                    "author": message.author.username,
+                    "content": message.content,
+                    "timestamp": datetime.strftime(message.timestamp, "%Y-%m-%d %H:%M"),
+                }
+                for message in messages
+            ]
 
-        self.first_uploaded_message_id -= self.messages_to_paginate
-        self.last_uploaded_message_id -= self.messages_to_paginate
+            self.first_uploaded_message_id -= self.messages_to_paginate
+            self.last_uploaded_message_id -= self.messages_to_paginate
 
-        return messages
+            return messages
+        return None
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))
