@@ -7,9 +7,9 @@ from .models import Profile
 
 User = get_user_model()
 
+
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
+    """Create profile when user signup"""
     if created:
-        Profile.objects.create(
-            user=instance
-        )
+        Profile.objects.create(user=instance)
