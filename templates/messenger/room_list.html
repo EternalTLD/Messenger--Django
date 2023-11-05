@@ -1,0 +1,34 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column align-self-start">
+    <div id="friends-list" class="overflow-auto p-1 pt-3 pe-3" data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px">
+        {% for room in room_list %}
+            <div class="p-3 bg-light border d-flex flex-row">
+                <div class="d-flex flex-column px-3">
+                    <div>
+                        {% if room.room_type == "G" %}
+                            <a href="{% url 'messenger:group_room' room.name %}">{{room.name}}</a>
+                        {% else %}
+                            <a href="{% url 'messenger:direct_room' room.name %}">{{room.name}}</a>
+                        {% endif %}
+                    </div>
+                    <div>
+                        Last message
+                    </div>
+                </div>
+                <div class="ml-auto d-flex align-self-center">
+                    MC - {{room.members_count}}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="p-3 mb-auto text-muted d-flex justify-content-center align-items-center bg-dark" style="height: 80px;">
+		<form action="{% url 'messenger:group_create' %}">
+			<button type="submit" class="btn btn-outline-warning">
+				Создать
+			</button>
+		</form>
+    </div>
+</div>
+{% endblock %}
