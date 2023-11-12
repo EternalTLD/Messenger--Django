@@ -14,19 +14,77 @@
                 </div>
             </div>
             <div id="request-actions" class="ml-auto d-flex align-self-center">
-                <form action="{% url 'friends:request_accept' request.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-success">Accept</button>
-                </form>
-                <form action="{% url 'friends:request_reject' request.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger">Reject</button>
-                </form>
+                <button class="btn btn-outline-success accept-btn" data-id={{request.id}}>Accept</button>
+                <button class="btn btn-outline-danger reject-btn" data-id={{request.id}}>Reject</button>
+                
             </div>
         </div>
     {% endfor %}
-{% endblock %}
 
-<script>
-    
-</script>
+    <script>
+
+        let acceptBtns = document.querySelectorAll(".accept-btn")
+        let rejectBtns = document.querySelectorAll(".reject-btn")
+        
+        for (let btn of acceptBtns) {
+            btn.addEventListener("click", acceptRequest)
+        }
+
+        for (let btn of rejectBtns) {
+            btn.addEventListener("click", rejectRequest)
+        }
+
+        async function postJSON(data, btn, action) {
+            let url
+
+            if (action == "Accept") {
+                url = '{% url "friends:request_accept" %}'
+            } else if (action == "Reject") {
+                url = '{% url "friends:request_reject" %}'
+            }
+
+            try {
+                const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                console.log("Success:", result);
+                
+                if (action == "Accept") {
+                    btn.innerText = "ACCEPTED"
+                    btn.disabled = true
+                    btn.nextElementSibling.remove()
+                } else if (action == "Reject") {
+                    btn.innerText = "REJECTED"
+                    btn.disabled = true
+                    btn.previousElementSibling.remove()
+                }
+                
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function acceptRequest(e) {
+            const btn = e.target
+            let data = e.target.dataset.id
+            let action = "Accept"
+            postJSON(data, btn, action)
+        }
+
+        function rejectRequest(e) {
+            const btn = e.target
+            let data = e.target.dataset.id
+            let action = "Reject"
+            postJSON(data, btn, action)
+        }
+
+    </script>
+
+{% endblock %}

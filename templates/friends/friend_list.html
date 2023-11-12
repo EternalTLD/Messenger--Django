@@ -13,17 +13,12 @@
                     </div>
                 </div>
                 <div class="ml-auto d-flex align-self-center">
-                    <form action="{% url 'friends:friend_remove' friend.from_user.username %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger">
-                            Удалить
-                        </button>
-                    </form>
                     <a href="{% url 'messenger:direct_room' friend.from_user.username %}">
                         <button type="submit" class="btn btn-outline-success">
                             Чат
                         </button>
                     </a>
+                    <button class="btn btn-outline-danger remove-btn" data-id={{friend.from_user.id}}>Удалить</button>
                 </div>
             </div>
         {% endfor %}
@@ -35,4 +30,43 @@
         </div>
     </form>
 </div>
+
+<script>
+    let removeBtns = document.querySelectorAll(".remove-btn")
+    
+    for (let btn of removeBtns) {
+        btn.addEventListener("click", removeFriend)
+    }
+
+    async function postJSON(data, btn) {
+        let url = '{% url "friends:friend_remove" %}'
+
+        try {
+            const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            console.log("Success:", result);
+            
+            btn.innerText = "Removed"
+            btn.disabled = true
+            
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    function removeFriend(e) {
+        const btn = e.target
+        let data = e.target.dataset.id
+        postJSON(data, btn)
+    }
+</script>
+
 {% endblock %}
