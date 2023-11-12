@@ -12,13 +12,7 @@
                     {{user.username}}
                 </div>
                 <div class="ml-auto d-flex align-self-center">
-                    <form action="{% url 'friends:friend_add' user.username %}" method="post">
-                        {% csrf_token%}
-                        <button type="submit" class="btn btn-outline-success">Add</button>
-                    </form>
-                    <button class="btn btn-outline-danger">
-                        Reject
-                    </button>
+                    <button class="btn btn-outline-success add-btn" data-id={{user.id}}>Add to friends</button>
                 </div>
             </div>
         {% endfor %}
@@ -30,5 +24,44 @@
         </div>
     </form>
 </div>
+
+<script>
+    let addBtns = document.querySelectorAll(".add-btn")
+    
+    for (let btn of addBtns) {
+        btn.addEventListener("click", addFriend)
+    }
+
+    async function postJSON(data, btn) {
+        let url = '{% url "friends:friend_add" %}'
+
+        try {
+            const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            console.log("Success:", result);
+            
+            btn.innerText = "Request sent"
+            btn.disabled = true
+            
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    function addFriend(e) {
+        const btn = e.target
+        let data = e.target.dataset.id
+        postJSON(data, btn)
+    }
+
+</script>
     
 {% endblock %}
