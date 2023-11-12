@@ -1,3 +1,4 @@
+import json
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
@@ -10,47 +11,51 @@ User = get_user_model()
 
 
 @login_required
-def add_friend_view(request, to_username):
+def add_friend_view(request):
     if request.method == "POST":
-        to_user = User.objects.get(username=to_username)
+        user_id = json.loads(request.body)
+        to_user = User.objects.get(id=user_id)
         from_user = request.user
         Friend.objects.add_friend(from_user=from_user, to_user=to_user)
 
-    return JsonResponse({"added": "add"})
+    return JsonResponse({"Status": "Added"})
 
 
 @login_required
-def accept_request_view(request, friendship_request_id):
+def accept_request_view(request):
     if request.method == "POST":
+        friendship_request_id = json.loads(request.body)
         user = request.user
         friendship_request = get_object_or_404(
             FriendshipRequest, id=friendship_request_id, to_user=user
         )
         friendship_request.accept()
 
-    return JsonResponse({"status": "accepted"})
+    return JsonResponse({"Status": "Accepted"})
 
 
 @login_required
-def reject_request_view(request, friendship_request_id):
+def reject_request_view(request):
     if request.method == "POST":
+        friendship_request_id = json.loads(request.body)
         user = request.user
         friendship_request = get_object_or_404(
             FriendshipRequest, id=friendship_request_id, to_user=user
         )
         friendship_request.reject()
 
-    return HttpResponse("rejected")
+    return JsonResponse({"Status": "Rejected"})
 
 
 @login_required
-def remove_friend_view(request, to_username):
+def remove_friend_view(request):
     if request.method == "POST":
-        to_user = User.objects.get(username=to_username)
+        friend_id = json.loads(request.body)
+        to_user = User.objects.get(id=friend_id)
         from_user = request.user
         Friend.objects.remove_friend(from_user=from_user, to_user=to_user)
 
-    return HttpResponse("removed")
+    return JsonResponse({"Status": "Removed"})
 
 
 @login_required

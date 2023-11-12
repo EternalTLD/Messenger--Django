@@ -13,16 +13,8 @@ urlpatterns = [
         views.unaccepted_requests_view,
         name="unaccepted_requests",
     ),
-    path("add/<str:to_username>/", views.add_friend_view, name="friend_add"),
-    path("remove/<str:to_username>/", views.remove_friend_view, name="friend_remove"),
-    path(
-        "request/<int:friendship_request_id>/accept/",
-        views.accept_request_view,
-        name="request_accept",
-    ),
-    path(
-        "request/<int:friendship_request_id>/reject/",
-        views.reject_request_view,
-        name="request_reject",
-    ),
+    path("add/", views.add_friend_view, name="friend_add"),
+    path("remove/", views.remove_friend_view, name="friend_remove"),
+    path("request/accept/", views.accept_request_view, name="request_accept"),
+    path("request/reject/", views.reject_request_view, name="request_reject"),
 ]
