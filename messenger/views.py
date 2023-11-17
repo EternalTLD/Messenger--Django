@@ -1,36 +1,32 @@
-from typing import Any, Dict
+from typing import Any
 from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse_lazy
 from django.db.models import Q
 
-from .models import Room, Message
-from .forms import GroupRoomCreateForm
+from .models import Room
+from .services import get_direct_room_title
 
 
-User = get_user_model()
-
-
+@login_required
 def index(request):
-    return render(request, "messenger/index.html", {"title": "Welcome"})
+    return redirect("profiles:profile_detail", username=request.user.username)
 
 
-class GroupRoomListView(ListView):
+class DirectRoomListView(ListView):
     template_name = "messenger/room_list.html"
     context_object_name = "room_list"
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self) -> QuerySet[Room]:
         user = self.request.user
         room_list = Room.objects.filter(
-            Q(participants__in=[user.id]) | Q(admin=user), room_type="G"
+            participants__in=[user.id], room_type="D"
         ).distinct()
         return room_list
 
@@ -38,27 +34,36 @@ class GroupRoomListView(ListView):
 class DirectRoomDetailView(DetailView):
     template_name = "messenger/room.html"
 
-    def get(self, request, *args, **kwargs):
-        first_user = request.user
-        second_user = get_object_or_404(User, username=self.kwargs.get("username"))
-
-        if Room.objects.filter(
-            name=f"{first_user.username}_{second_user.username}", room_type="D"
-        ).exists():
-            room = Room.objects.get(
-                name=f"{first_user.username}_{second_user.username}", room_type="D"
-            )
-        elif Room.objects.filter(
-            name=f"{second_user.username}_{first_user.username}", room_type="D"
-        ).exists():
-            room = Room.objects.get(
-                name=f"{second_user.username}_{first_user.username}", room_type="D"
-            )
-        else:
-            raise ObjectDoesNotExist("Room does not exist")
+    def get(self, request, *args: Any, **kwargs: Any) -> HttpResponse:
+        room_name = self.kwargs.get("room_name")
+        room = get_object_or_404(Room, name=room_name, room_type="D")
+        room_title = get_direct_room_title(request.user.username, room_name)
 
         return render(
-            request, "messenger/room.html", {"room": room, "to_user": second_user}
+            request, "messenger/room.html", {"room": room, "room_title": room_title}
+        )
+
+
+class GroupRoomListView(ListView):
+    template_name = "messenger/room_list.html"
+    context_object_name = "room_list"
+
+    def get_queryset(self) -> QuerySet[Room]:
+        user = self.request.user
+        room_list = Room.objects.filter(
+            Q(participants__in=[user.id]) | Q(admin=user), room_type="G"
+        ).distinct()
+        return room_list
+
+
+class GroupRoomDetailView(DetailView):
+    template_name = "messenger/group_room.html"
+
+    def get(self, request, *args: Any, **kwargs: Any) -> HttpResponse:
+        room = get_object_or_404(Room, name=self.kwargs.get("room_name"), room_type="G")
+
+        return render(
+            request, "messenger/room.html", {"room": room, "room_title": room.name}
         )
 
 
@@ -71,6 +76,7 @@ class GroupRoomCreateView(CreateView):
     def form_valid(self, form: BaseModelForm) -> HttpResponse:
         room = form.save(commit=False)
         room.admin = self.request.user
+        room.room_type = "G"
         room.save()
         return super().form_valid(form)
 
@@ -85,13 +91,3 @@ class GroupRoomDeleteView(DeleteView):
     model = Room
     success_url = reverse_lazy("messenger:room_list")
 
-
-class GroupRoomDetailView(DetailView):
-    template_name = "messenger/group_room.html"
-
-    def get(self, request, *args, **kwargs):
-        room = get_object_or_404(Room, name=self.kwargs.get("room_name"), room_type="G")
-
-        return render(
-            request, "messenger/room.html", {"room": room, "to_user": room.name}
-        )
