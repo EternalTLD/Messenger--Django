@@ -22,16 +22,16 @@ class ChatConsumer(WebsocketConsumer):
         self.messages_to_paginate = 10
 
     def get_start_messages(self):
-        try:
-            self.last_uploaded_message_id = Message.objects.filter(room=self.room).first().id
-            self.first_uploaded_message_id = Message.objects.filter(room=self.room)[
-                self.messages_to_paginate - 1
-            ].id
-        except AttributeError:
-            self.last_uploaded_message_id = None
-            self.first_uploaded_message_id = None
-        except IndexError:
-            self.first_uploaded_message_id = Message.objects.filter(room=self.room).last().id
+        messages = Message.objects.filter(room=self.room)
+        if messages:
+            self.last_message_id = messages.first().id
+            try:
+                self.first_message_id = messages[self.messages_to_paginate - 1].id
+            except (AttributeError, IndexError):
+                self.first_message_id = messages.last().id
+        else:
+            self.last_message_id = None
+            self.first_message_id = None
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
@@ -93,11 +93,11 @@ class ChatConsumer(WebsocketConsumer):
         return message
 
     def get_room_messages(self):
-        if self.first_uploaded_message_id and self.last_uploaded_message_id:
+        if self.first_message_id and self.last_message_id:
             messages = Message.objects.filter(
-                Q(id__gte=self.first_uploaded_message_id),
-                Q(id__lte=self.last_uploaded_message_id),
-                room = self.room
+                Q(id__gte=self.first_message_id),
+                Q(id__lte=self.last_message_id),
+                room=self.room,
             )
             messages = [
                 {
@@ -108,8 +108,8 @@ class ChatConsumer(WebsocketConsumer):
                 for message in messages
             ]
 
-            self.first_uploaded_message_id -= self.messages_to_paginate
-            self.last_uploaded_message_id -= self.messages_to_paginate
+            self.first_message_id -= self.messages_to_paginate
+            self.last_message_id -= self.messages_to_paginate
 
             return messages
         return None
