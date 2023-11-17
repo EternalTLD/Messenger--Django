@@ -90,4 +90,3 @@ class GroupRoomUpdateView(UpdateView):
 class GroupRoomDeleteView(DeleteView):
     model = Room
     success_url = reverse_lazy("messenger:room_list")
-
