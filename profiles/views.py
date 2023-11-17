@@ -1,19 +1,16 @@
-from typing import Any
 from django.shortcuts import render
 from django.views import View
 from django.views.generic.detail import DetailView
 from django.contrib.auth import get_user_model
+from django.db import transaction
 
 from .forms import UserEditForm, ProfileEditForm
-from friends.models import Friend
-
-
-User = get_user_model()
+from friends.models import Friend, FriendshipRequest
 
 
 class ProfileDetailView(DetailView):
     template_name = "profiles/profile_detail.html"
-    model = User
+    model = get_user_model()
     slug_field = "username"
     slug_url_kwarg = "username"
     context_object_name = "user"
@@ -40,28 +37,43 @@ class ProfileEditView(View):
             instance=request.user.profile, data=request.POST, files=request.FILES
         )
         if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
+            with transaction.atomic():
+                user_form.save()
+                profile_form.save()
 
         return render(
             request,
-            "profiles/profile_edit.html",
+            self.template_name,
             {"user_form": user_form, "profile_form": profile_form},
         )
 
 
 def user_search_view(request, *args, **kwargs):
     users = []
-    current_user = request.user
+    User = get_user_model()
 
     if request.method == "GET":
         query = request.GET.get("query")
         if query:
-            search_result = User.objects.filter(username__icontains=query).exclude(
-                username=current_user.username
+            friends = Friend.objects.friends(request.user).values_list(
+                "to_user_id", flat=True
             )
+
+            sent_requests = FriendshipRequest.objects.filter(
+                from_user=request.user
+            ).values_list("to_user_id", flat=True)
+
+            received_requests = FriendshipRequest.objects.filter(
+                to_user=request.user
+            ).values_list("from_user_id", flat=True)
+
+            search_result = User.objects.filter(username__icontains=query).exclude(
+                username=request.user.username
+            )
+
             for user in search_result:
-                if not Friend.objects.are_friends(user, current_user):
-                    users.append(user)
+                if user.id not in friends and user.id not in received_requests:
+                    sent = user.id in sent_requests
+                    users.append((user, sent))
 
     return render(request, "profiles/search_user.html", {"users": users})
