@@ -8,8 +8,8 @@ from .models import Room
 @receiver(post_save, sender=Friend)
 def create_direct_chat_room(sender, instance, **kwargs):
     """Create a chat room when users become friends"""
-    first_user = instance.from_user.username
-    second_user = instance.to_user.username
+    first_user = instance.from_user
+    second_user = instance.to_user
     room = Room.objects.create(name=f"{first_user}_{second_user}", room_type="D")
     room.participants.add(first_user, second_user)
 
@@ -21,8 +21,8 @@ def create_direct_chat_room(sender, instance, **kwargs):
 @receiver(post_delete, sender=Friend)
 def delete_direct_chat_room(sender, instance, **kwargs):
     """Delete a chat room when users stop being friends"""
-    first_user = instance.from_user.username
-    second_user = instance.to_user.username
+    first_user = instance.from_user
+    second_user = instance.to_user
 
     if Room.objects.filter(name=f"{first_user}_{second_user}", room_type="D").exists():
         Room.objects.get(name=f"{first_user}_{second_user}", room_type="D").delete()
