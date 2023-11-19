@@ -56,7 +56,7 @@ def user_search_view(request, *args, **kwargs):
         query = request.GET.get("query")
         if query:
             friends = Friend.objects.friends(request.user).values_list(
-                "to_user_id", flat=True
+                "from_user_id", flat=True
             )
 
             sent_requests = FriendshipRequest.objects.filter(
@@ -70,6 +70,7 @@ def user_search_view(request, *args, **kwargs):
             search_result = User.objects.filter(username__icontains=query).exclude(
                 username=request.user.username
             )
+            print(sent_requests, received_requests, friends)
 
             for user in search_result:
                 if user.id not in friends and user.id not in received_requests:
