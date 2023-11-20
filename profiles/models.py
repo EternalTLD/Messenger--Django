@@ -29,3 +29,9 @@ class Profile(models.Model):
         if last_seen is not None and timezone.now() - last_seen < timezone.timedelta(seconds=300):
             return True
         return False
+
+    @property
+    def status(self) -> str:
+        if self.is_online:
+            return "Online"
+        return "Offline"
