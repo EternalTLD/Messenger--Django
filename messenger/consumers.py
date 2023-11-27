@@ -1,15 +1,10 @@
 import json
 from datetime import datetime
-
-from django.contrib.auth import get_user_model
 from django.db.models import Q
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
 from .models import Message, Room
-
-
-User = get_user_model()
 
 
 class ChatConsumer(WebsocketConsumer):
