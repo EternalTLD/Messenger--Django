@@ -1,5 +1,6 @@
 from typing import Any
-from django.http import HttpRequest, HttpResponse
+from django.forms.models import BaseModelForm
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.contrib.auth.decorators import login_required
@@ -65,17 +66,14 @@ class GroupRoomCreateView(generic.CreateView):
     model = Room
     form_class = GroupRoomCreateForm
     template_name = "messenger/create_group_room.html"
-    
-    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        form = self.get_form()
-        if form.is_valid():
-            room = form.save(commit=False)
-            room.admin = request.user
-            room.room_type = "G"
-            room.save()
-            form.save_m2m()
-            return redirect("messenger:group_room", room_name=room.name)
-        return render(request, self.template_name, {"form": form})
+
+    def form_valid(self, form: BaseModelForm) -> HttpResponse:
+        room = form.save(commit=False)
+        room.admin = self.request.user
+        room.room_type = "G"
+        room.save()
+        form.save_m2m()
+        return redirect("messenger:group_room", room_name=room.name)
     
     def get_form_kwargs(self) -> dict[str, Any]:
         kwargs = super().get_form_kwargs()
