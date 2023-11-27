@@ -6,7 +6,10 @@ from django.conf import settings
 class Room(models.Model):
     DIRECT = "D"
     GROUP = "G"
-    ROOM_TYPE = [(DIRECT, "Direct"), (GROUP, "Group")]
+    ROOM_TYPE = (
+        (DIRECT, "Direct"), 
+        (GROUP, "Group")
+    )
 
     name = models.CharField(max_length=20, unique=True)
     participants = models.ManyToManyField(
@@ -28,12 +31,13 @@ class Room(models.Model):
     def __str__(self) -> str:
         if self.room_type == "D":
             return f"Direct chat room - {self.name}"
-        else:
-            return f"Group chat room - {self.name}"
+        return f"Group chat room - {self.name}"
 
     @property
     def members_count(self):
-        return self.participants.count()
+        if self.room_type == "D":
+            return self.participants.count()
+        return self.participants.count() + 1
 
 
 class Message(models.Model):
