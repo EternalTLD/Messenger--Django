@@ -36,7 +36,7 @@
             <div class="p-3 bg-dark">
                 <div class="d-flex flex-row justify-content-start">
                     {% if request.user.is_authenticated %}
-                        <div id="room_name" class="px-3 text-light align-self-center">
+                        <div id="head_title" class="px-3 text-light align-self-center">
                             <a href="{% url 'profiles:profile_detail' request.user.username %}">
                                 {{request.user.username}}
                             </a>

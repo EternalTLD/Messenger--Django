@@ -56,6 +56,7 @@
             
             btn.innerText = "Removed"
             btn.disabled = true
+            btn.previousElementSibling.remove()
             
         } catch (error) {
             console.error("Error:", error);

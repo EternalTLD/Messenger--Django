@@ -7,7 +7,6 @@
   </div>
 
   <div class="p-3 mb-auto text-muted d-flex justify-content-start align-items-center bg-dark">
-    <a href="{% url 'messenger:participants' room.name %}">part</a>
     <input type="text" class="form-control form-control-lg" id="message" placeholder="Введите сообщение...">
     <button id="send-message" class="btn btn-outline-primary btn-sm" style="margin: 0px 0px 0px 5px;">Отправить</button>
   </div>
@@ -41,7 +40,7 @@ chatSocket.onmessage = function(e) {
 };
 
 chatSocket.onopen = function (e) {
-  document.querySelector('#room_name').innerText = '{{room_name}}';
+  document.querySelector('#head_title').innerText = '{{room_title}}';
   chatLog.innerHTML = '';
   chatSocket.send(JSON.stringify(
     {
