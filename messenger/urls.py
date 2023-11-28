@@ -8,7 +8,7 @@ urlpatterns = [
     
     path(
         "direct_room_list/", 
-        views.DirectRoomListView.as_view(), 
+        views.RoomListView.as_view(room_type="D"), 
         name="direct_room_list"
     ),
     path(
@@ -19,7 +19,7 @@ urlpatterns = [
 
     path(
         "group_room_list/", 
-        views.GroupRoomListView.as_view(), 
+        views.RoomListView.as_view(room_type="G"), 
         name="group_room_list"
     ),
     path(

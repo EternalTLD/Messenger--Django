@@ -1,14 +1,17 @@
 from typing import Any
+from django import http
 from django.forms.models import BaseModelForm
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
 from django.db.models import Q, QuerySet
 
 from .models import Room
 from .forms import GroupRoomCreateForm
+from .decorators import is_room_participant
 
 
 @login_required
@@ -16,47 +19,45 @@ def index(request):
     return redirect("profiles:profile_detail", username=request.user.username)
 
 
-class DirectRoomListView(generic.ListView):
+@method_decorator(login_required, name="dispatch")
+class RoomListView(generic.ListView):
+    """Base room list view"""
     template_name = "messenger/room_list.html"
     context_object_name = "room_list"
     model = Room
+    room_type = None
 
     def get_queryset(self) -> QuerySet[Room]:
         user = self.request.user
         room_list = self.model.objects.filter(
-            participants__in=[user.id], room_type="D"
+            participants__in=[user.id], room_type=self.room_type
         ).distinct()
         return room_list
+    
 
-
-class DirectRoomDetailView(generic.DetailView):
+@method_decorator([login_required, is_room_participant], name="dispatch")
+class RoomDetailView(generic.DetailView):
+    """Base room detail view"""
     template_name = "messenger/room.html"
+    model = Room
+
+
+class DirectRoomDetailView(RoomDetailView):
+    """Direct room detail view"""
 
     def get(self, request, *args: Any, **kwargs: Any) -> HttpResponse:
-        room = get_object_or_404(Room, name=self.kwargs.get("room_name"), room_type="D")
+        room = get_object_or_404(self.model, name=self.kwargs.get("room_name"), room_type="D")
         room_title = room.participants.exclude(id=request.user.id).first()
         return render(
             request, self.template_name, {"room": room, "room_title": room_title}
         )
 
 
-class GroupRoomListView(generic.ListView):
-    template_name = "messenger/room_list.html"
-    context_object_name = "room_list"
-
-    def get_queryset(self) -> QuerySet[Room]:
-        user = self.request.user
-        room_list = Room.objects.filter(
-            Q(participants__in=[user.id]) | Q(admin=user), room_type="G"
-        ).distinct()
-        return room_list
-
-
-class GroupRoomDetailView(generic.DetailView):
-    template_name = "messenger/room.html"
+class GroupRoomDetailView(RoomDetailView):
+    """Group room detail view"""
 
     def get(self, request, *args: Any, **kwargs: Any) -> HttpResponse:
-        room = get_object_or_404(Room, name=self.kwargs.get("room_name"), room_type="G")
+        room = get_object_or_404(self.model, name=self.kwargs.get("room_name"), room_type="G")
         return render(
             request, self.template_name, {"room": room, "room_title": room.name}
         )
@@ -73,6 +74,7 @@ class GroupRoomCreateView(generic.CreateView):
         room.room_type = "G"
         room.save()
         form.save_m2m()
+        room.participants.add(self.request.user)
         return redirect("messenger:group_room", room_name=room.name)
     
     def get_form_kwargs(self) -> dict[str, Any]:
