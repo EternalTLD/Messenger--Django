@@ -28,12 +28,12 @@ urlpatterns = [
         name="group_create"
     ),
     path(
-        "group/<int:id>/update/",
+        "group/<int:pk>/update/",
         views.GroupRoomUpdateView.as_view(),
         name="group_update",
     ),
     path(
-        "group/<int:id>/delete/",
+        "group/<int:pk>/delete/",
         views.GroupRoomDeleteView.as_view(),
         name="group_delete",
     ),

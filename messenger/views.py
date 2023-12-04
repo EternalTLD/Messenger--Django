@@ -1,17 +1,16 @@
 from typing import Any
-from django import http
 from django.forms.models import BaseModelForm
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 
 from .models import Room
 from .forms import GroupRoomCreateForm
-from .decorators import is_room_participant
+from .decorators import is_room_participant, is_room_admin
 
 
 @login_required
@@ -21,7 +20,7 @@ def index(request):
 
 @method_decorator(login_required, name="dispatch")
 class RoomListView(generic.ListView):
-    """Base room list view"""
+    """Room list view"""
     template_name = "messenger/room_list.html"
     context_object_name = "room_list"
     model = Room
@@ -42,6 +41,7 @@ class RoomDetailView(generic.DetailView):
     model = Room
 
 
+@method_decorator(login_required, name="dispatch")
 class DirectRoomDetailView(RoomDetailView):
     """Direct room detail view"""
 
@@ -53,6 +53,7 @@ class DirectRoomDetailView(RoomDetailView):
         )
 
 
+@method_decorator(login_required, name="dispatch")
 class GroupRoomDetailView(RoomDetailView):
     """Group room detail view"""
 
@@ -63,6 +64,7 @@ class GroupRoomDetailView(RoomDetailView):
         )
 
 
+@method_decorator(login_required, name="post")
 class GroupRoomCreateView(generic.CreateView):
     model = Room
     form_class = GroupRoomCreateForm
@@ -83,6 +85,7 @@ class GroupRoomCreateView(generic.CreateView):
         return kwargs
 
 
+@method_decorator([login_required, is_room_admin], name="dispatch")
 class GroupRoomUpdateView(generic.UpdateView):
     model = Room
     form_class = GroupRoomCreateForm
@@ -90,8 +93,15 @@ class GroupRoomUpdateView(generic.UpdateView):
 
     def get_success_url(self) -> str:
         return redirect("messenger:group_room", room_name=self.kwargs.pop("room_name"))
+    
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"user": self.request.user})
+        return kwargs
 
 
+@method_decorator([login_required, is_room_admin], name="post")
 class GroupRoomDeleteView(generic.DeleteView):
     model = Room
+    template_name = "messenger/room_delete.html"
     success_url = reverse_lazy("messenger:room_list")
