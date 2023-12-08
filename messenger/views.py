@@ -30,7 +30,7 @@ class RoomListView(generic.ListView):
         user = self.request.user
         room_list = self.model.objects.filter(
             participants__in=[user.id], room_type=self.room_type
-        ).distinct()
+        )
         return room_list
     
 
@@ -41,7 +41,6 @@ class RoomDetailView(generic.DetailView):
     model = Room
 
 
-@method_decorator(login_required, name="dispatch")
 class DirectRoomDetailView(RoomDetailView):
     """Direct room detail view"""
 
@@ -53,7 +52,6 @@ class DirectRoomDetailView(RoomDetailView):
         )
 
 
-@method_decorator(login_required, name="dispatch")
 class GroupRoomDetailView(RoomDetailView):
     """Group room detail view"""
 
@@ -100,7 +98,7 @@ class GroupRoomUpdateView(generic.UpdateView):
         return kwargs
 
 
-@method_decorator([login_required, is_room_admin], name="post")
+@method_decorator([login_required, is_room_admin], name="dispatch")
 class GroupRoomDeleteView(generic.DeleteView):
     model = Room
     template_name = "messenger/room_delete.html"
