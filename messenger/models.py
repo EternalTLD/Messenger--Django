@@ -36,8 +36,15 @@ class Room(models.Model):
     @property
     def members_count(self):
         if self.room_type == "D":
-            return self.participants.count()
-        return self.participants.count() + 1
+            return 2
+        return self.participants.count()
+    
+    @property
+    def get_last_message(self):
+        message = Message.objects.filter(room=self).last()
+        if message:
+            return message.content
+        return "There are no messages yet"
 
 
 class Message(models.Model):
@@ -53,7 +60,7 @@ class Message(models.Model):
     class Meta:
         verbose_name = "Message"
         verbose_name_plural = "Messages"
-        ordering = ["-timestamp"]
+        ordering = ["timestamp"]
 
     def __str__(self) -> str:
         return f"Message from {self.author.username} | {self.timestamp}"

@@ -8,17 +8,22 @@
                 <div class="d-flex flex-column px-3">
                     <div>
                         {% if room.room_type == "G" %}
-                            <a href="{% url 'messenger:group_room' room.name %}">{{room.name}}</a>
+                            <a href="{% url 'messenger:group_room' room.name %}">
+                                {{room.name}} ({{room.members_count}} members)
+                            </a>
                         {% else %}
-                            <a href="{% url 'messenger:direct_room' room.name %}">{{room.name}}</a>
+                            {% for participant in room.participants.all %}
+                                {% if participant.id != request.user.id %}
+                                    <a href="{% url 'messenger:direct_room' room.name %}">
+                                        {{ participant.username }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
                         {% endif %}
                     </div>
                     <div>
-                        Last message
+                        {{ room.get_last_message }}
                     </div>
-                </div>
-                <div class="ml-auto d-flex align-self-center">
-                    MC - {{room.members_count}}
                 </div>
             </div>
         {% endfor %}
