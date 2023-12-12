@@ -15,8 +15,10 @@ class UserActivityMiddleware:
             last_activity = cache.get(cache_key)
 
             if not last_activity:
-                Profile.objects.filter(user=request.user).update(last_seen=timezone.now())
+                Profile.objects.filter(user=request.user).update(
+                    last_seen=timezone.now()
+                )
                 cache.set(cache_key, timezone.now(), 300)
-        
+
         response = self.get_response(request)
         return response
