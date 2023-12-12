@@ -26,7 +26,9 @@ class Profile(models.Model):
     def is_online(self) -> bool:
         cache_key = f"last_activity_{self.user.id}"
         last_seen = cache.get(cache_key)
-        if last_seen is not None and timezone.now() - last_seen < timezone.timedelta(seconds=300):
+        if last_seen is not None and timezone.now() - last_seen < timezone.timedelta(
+            seconds=300
+        ):
             return True
         return False
 
