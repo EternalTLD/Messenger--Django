@@ -5,9 +5,14 @@ from .models import Friend, FriendshipRequest
 
 @admin.register(Friend)
 class FriendAdmin(admin.ModelAdmin):
-    raw_id_fields = ("to_user", "from_user")
+    list_display = ("to_user", "from_user", "friends_since")
+    search_fields = ("to_user__username", "from_user__username")
+    list_filter = ("created_at", )
 
+    def friends_since(self, obj):
+        return obj.created_at.strftime("%d/%m/%Y")
+    
 
 @admin.register(FriendshipRequest)
 class FriendshipRequestAdmin(admin.ModelAdmin):
-    raw_id_fields = ("from_user", "to_user")
+    list_display = ("from_user", "to_user")
