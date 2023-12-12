@@ -4,9 +4,12 @@ from django.contrib.auth import get_user_model
 from .models import Profile
 
 
+User = get_user_model()
+
+
 class UserEditForm(forms.ModelForm):
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ["first_name", "last_name"]
 
 
