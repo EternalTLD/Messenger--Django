@@ -137,6 +137,7 @@ class FriendshipRequest(models.Model):
 
 class Friend(models.Model):
     """Friend model"""
+
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

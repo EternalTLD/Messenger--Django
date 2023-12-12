@@ -7,17 +7,17 @@ from .models import Friend, FriendshipRequest
 class FriendAdmin(admin.ModelAdmin):
     list_display = ("to_user", "from_user", "friends_since")
     search_fields = ("to_user__username", "from_user__username")
-    list_filter = ("created_at", )
+    list_filter = ("created_at",)
     actions = ["remove_friend"]
 
     def friends_since(self, obj):
         return obj.created_at.strftime("%d/%m/%Y")
-    
+
     @admin.action(description="Remove selected friends")
     def remove_friend(self, request, queryset):
         for friend in queryset:
             friend.delete()
-    
+
 
 @admin.register(FriendshipRequest)
 class FriendshipRequestAdmin(admin.ModelAdmin):
@@ -30,13 +30,13 @@ class FriendshipRequestAdmin(admin.ModelAdmin):
         if obj.rejected_at:
             return "Rejected"
         return "Pending"
-    
-    @admin.action(description='Accept selected friendship requests')
+
+    @admin.action(description="Accept selected friendship requests")
     def accept_request(self, request, queryset):
         for fr in queryset:
             fr.accept()
-    
-    @admin.action(description='Reject selected friendship requests')
+
+    @admin.action(description="Reject selected friendship requests")
     def reject_request(self, request, queryset):
         for fr in queryset:
             fr.reject()
