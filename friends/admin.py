@@ -8,9 +8,15 @@ class FriendAdmin(admin.ModelAdmin):
     list_display = ("to_user", "from_user", "friends_since")
     search_fields = ("to_user__username", "from_user__username")
     list_filter = ("created_at", )
+    actions = ["remove_friend"]
 
     def friends_since(self, obj):
         return obj.created_at.strftime("%d/%m/%Y")
+    
+    @admin.action(description="Remove selected friends")
+    def remove_friend(self, request, queryset):
+        for friend in queryset:
+            friend.delete()
     
 
 @admin.register(FriendshipRequest)
