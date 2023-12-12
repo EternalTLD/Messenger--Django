@@ -15,4 +15,22 @@ class FriendAdmin(admin.ModelAdmin):
 
 @admin.register(FriendshipRequest)
 class FriendshipRequestAdmin(admin.ModelAdmin):
-    list_display = ("from_user", "to_user")
+    list_display = ("from_user", "to_user", "status", "created_at", "rejected_at")
+    search_fields = ("to_user__username", "from_user__username")
+    list_filter = ("created_at", "rejected_at")
+    actions = ["accept_request", "reject_request"]
+
+    def status(self, obj):
+        if obj.rejected_at:
+            return "Rejected"
+        return "Pending"
+    
+    @admin.action(description='Accept selected friendship requests')
+    def accept_request(self, request, queryset):
+        for fr in queryset:
+            fr.accept()
+    
+    @admin.action(description='Reject selected friendship requests')
+    def reject_request(self, request, queryset):
+        for fr in queryset:
+            fr.reject()
