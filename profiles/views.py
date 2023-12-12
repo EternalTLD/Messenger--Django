@@ -8,9 +8,12 @@ from .forms import UserEditForm, ProfileEditForm
 from friends.models import Friend, FriendshipRequest
 
 
+User = get_user_model()
+
+
 class ProfileDetailView(DetailView):
     template_name = "profiles/profile_detail.html"
-    model = get_user_model()
+    model = User
     slug_field = "username"
     slug_url_kwarg = "username"
     context_object_name = "user"
@@ -50,7 +53,6 @@ class ProfileEditView(View):
 
 def user_search_view(request, *args, **kwargs):
     users = []
-    User = get_user_model()
 
     if request.method == "GET":
         query = request.GET.get("query")
