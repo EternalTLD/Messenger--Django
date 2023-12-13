@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
 
+User = get_user_model()
+
+
 class SignUpForm(UserCreationForm):
     username = forms.CharField(
         max_length=25,
@@ -14,12 +17,12 @@ class SignUpForm(UserCreationForm):
     password2 = forms.CharField(label="Repeat password", widget=forms.PasswordInput)
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ("username", "email", "password1", "password2")
 
     def clean_username(self):
         username = self.cleaned_data.get("username")
-        if get_user_model().objects.filter(username=username).exists():
+        if User.objects.filter(username=username).exists():
             raise forms.ValidationError("User with this username is already exists.")
         if " " in username:
             raise forms.ValidationError("Username must not contain spaces.")
@@ -27,7 +30,7 @@ class SignUpForm(UserCreationForm):
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
-        if get_user_model().objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists():
             raise forms.ValidationError("User with this email is already exists.")
         return email
 
