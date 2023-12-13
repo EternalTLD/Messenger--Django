@@ -18,6 +18,8 @@
 <script>
 const username = '{{request.user}}';
 const chatLog = document.getElementById('chat-log');
+const messageInput = document.querySelector('#message');
+let page = 1; 
 
 var chatSocket = new ReconnectingWebSocket(
   'ws://' + 
@@ -29,126 +31,104 @@ var chatSocket = new ReconnectingWebSocket(
 
 chatSocket.onmessage = function(e) {
   var data = JSON.parse(e.data);
-  if (data['type'] == 'chat_message') {
-    createMessage(data['message']);
-  } else if (data['type'] == 'fetch_messages') {
-    uploadMessages(data['message']);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  } else if (data['type'] == 'paginate') {
-    uploadMessages(data['message']);
-  }
+  if (data['message'] !== null) {
+    if (data['type'] == 'chat_message') {
+      createMessage(data['message']);
+
+    } else if (data['type'] == 'fetch_messages') {
+      fetchMessages(data['message']);
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+    }
+  };
 };
 
+
+function createMessage(message) {
+  messageElement = buildMessage(message);
+  chatLog.appendChild(messageElement);
+};
+
+
+
 chatSocket.onopen = function (e) {
+  page = 1;
   document.querySelector('#head_title').innerText = '{{room_title}}';
   chatLog.innerHTML = '';
   chatSocket.send(JSON.stringify(
     {
       'type': 'fetch_messages',
+      'page': page,
     }
   ));
 };
 
 document.querySelector('#send-message').onclick = function (e) {
   e.preventDefault();
-  const message = document.querySelector('#message');
-  const content = message.value;
-  chatSocket.send(JSON.stringify(
-    {
-      'type': 'chat_message',
-      'content': content,
-    }
-  ));
-  message.value = '';
-};
-
-function createMessage(data) {
-  var author = data['author'];
-  var content = data['content'];
-  var timestamp = data['timestamp'];
-
-  if (username == author) {
-    chatLog.innerHTML += 
-    '<div id="sender" class="d-flex flex-row justify-content-end">' +
-      '<div>' +
-        '<p class="small p-2 me-3 mb-1 text-white rounded bg-primary">' +
-            content +
-        '</p>' +
-        '<p class="small me-3 mb-3 rounded text-muted">' +
-            timestamp +
-        '</p>' +
-      '</div>' +
-    '</div>'
-  } else {
-    chatLog.innerHTML +=
-      '<div id="reciever" class="d-flex flex-row justify-content-start">' +
-        '<div>' +
-          '<p class="small p-2 ms-3 mb-1 rounded text-light" style="background-color: #696969;">' +
-            content +
-          '</p>' +
-          ' <p class="small ms-3 mb-3 rounded text-muted float-end">' +
-            timestamp +
-          '</p>' +
-        '</div>' +
-      '</div>'
-  };
-  chatLog.scrollTop = chatLog.scrollHeight;
-};
-
-function insertMessageUp(data) {
-  var author = data['author'];
-  var content = data['content'];
-  var timestamp = data['timestamp'];
-
-  if (username == author) {
-    chatLog.insertAdjacentHTML(
-      'afterbegin',
-      '<div id="sender" class="d-flex flex-row justify-content-end">' +
-      '<div>' +
-        '<p class="small p-2 me-3 mb-1 text-white rounded bg-primary">' +
-            content +
-        '</p>' +
-        '<p class="small me-3 mb-3 rounded text-muted">' +
-            timestamp +
-        '</p>' +
-      '</div>' +
-    '</div>'
-    )
-  } else {
-    chatLog.insertAdjacentHTML(
-      'afterbegin',
-      '<div id="reciever" class="d-flex flex-row justify-content-start">' +
-        '<div>' +
-          '<p class="small p-2 ms-3 mb-1 rounded text-light" style="background-color: #696969;">' +
-            content +
-          '</p>' +
-          ' <p class="small ms-3 mb-3 rounded text-muted float-end">' +
-            timestamp +
-          '</p>' +
-        '</div>' +
-      '</div>'
-    )
-  }
-};
-
-function uploadMessages(data) {
-  for (const msg of data) {
-    insertMessageUp(msg);
+  let content = messageInput.value;
+  if (content !== '') {
+    chatSocket.send(JSON.stringify(
+      {
+        'type': 'chat_message',
+        'content': content,
+      }
+    ));
+    messageInput.value = '';
   };
 };
+
 
 chatLog.addEventListener('scroll', () => {
   if (chatLog.scrollTop == 0) {
+    page++;
     chatSocket.send(JSON.stringify(
       {
-        'type': 'paginate'
+        'type': 'fetch_messages',
+        'page': page,
       }
     ))
   };
 });
 
+
+function fetchMessages(messages) {
+  let fragment = document.createDocumentFragment();
+
+  for (const msg of messages) {
+    const messageElement = buildMessage(msg);
+    fragment.appendChild(messageElement);
+  };
+
+  chatLog.insertBefore(fragment, chatLog.firstChild);
+
+  const newScrollHeight = chatLog.scrollHeight;
+  chatLog.scrollTop = newScrollHeight
+  console.log(newScrollHeight)
+};
+
+
+function buildMessage(message) {
+  var div = document.createElement('div');
+  div.className = message['author'] == username ? 'd-flex flex-row justify-content-end' : 'd-flex flex-row justify-content-start';
+  var innerDiv = document.createElement('div');
+  var p1 = document.createElement('p');
+  var p2 = document.createElement('p');
+  p1.className = message['author'] == username ? 'small p-2 me-3 mb-1 text-white rounded bg-primary' : 'small p-2 ms-3 mb-1 rounded text-light';
+  p1.style.backgroundColor = message['author'] == username ? '' : '#696969';
+  p1.textContent = message['content'];
+  p2.className = 'small mb-3 rounded text-muted';
+  p2.textContent = message['timestamp'];
+  innerDiv.appendChild(p1);
+  innerDiv.appendChild(p2);
+  div.appendChild(innerDiv);
+  return div;
+}
+
+
 chatSocket.onclose = function(e) {
   console.error('Chat socket closed unexpectedly');
 };
+
+
 </script>
 {% endblock %}
