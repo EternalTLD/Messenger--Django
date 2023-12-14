@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
-from django.db.models import Q
+
+from django.conf import settings
+from django.core.paginator import Paginator, EmptyPage
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
@@ -14,26 +16,32 @@ class ChatConsumer(WebsocketConsumer):
         self.room_group_name = None
         self.room = None
         self.user = None
-        self.messages_to_paginate = 10
+        self.messages_to_paginate = settings.MESSAGES_TO_PAGINATE
 
-    def get_start_messages(self):
-        messages = Message.objects.filter(room=self.room)
-        if messages:
-            self.last_message_id = messages.first().id
-            try:
-                self.first_message_id = messages[self.messages_to_paginate - 1].id
-            except (AttributeError, IndexError):
-                self.first_message_id = messages.last().id
-        else:
-            self.last_message_id = None
-            self.first_message_id = None
+    def get_messages(self, page):
+        queryset = Message.objects.filter(room=self.room)
+        paginator = Paginator(queryset, self.messages_to_paginate)
+
+        try:
+            messages_page = paginator.page(page)
+        except EmptyPage:
+            return None
+        
+        messages = [
+            {
+            "author": message.author.username,
+            "content": message.content,
+            "timestamp": datetime.strftime(message.timestamp, "%Y-%m-%d %H:%M"),
+            } for message in messages_page.object_list[::-1]
+        ]
+        return messages
+
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"chat_{self.room_name}"
         self.room = Room.objects.get(name=self.room_name)
         self.user = self.scope["user"]
-        self.get_start_messages()
 
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name, self.channel_name
@@ -48,9 +56,10 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
+        command = text_data_json.get("type")
 
-        if text_data_json["type"] == "chat_message":
-            content = text_data_json["content"]
+        if command == "chat_message":
+            content = text_data_json.get("content")
             new_message = self.save_message(content)
 
             async_to_sync(self.channel_layer.group_send)(
@@ -67,15 +76,8 @@ class ChatConsumer(WebsocketConsumer):
                 },
             )
 
-        if text_data_json["type"] == "paginate":
-            messages = self.get_room_messages()
-
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name, {"type": "paginate", "message": messages}
-            )
-
-        if text_data_json["type"] == "fetch_messages":
-            messages = self.get_room_messages()
+        if command == "fetch_messages":
+            messages = self.get_messages(text_data_json.get("page"))
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, {"type": "fetch_messages", "message": messages}
@@ -86,28 +88,6 @@ class ChatConsumer(WebsocketConsumer):
             author=self.user, content=content, room=self.room
         )
         return message
-
-    def get_room_messages(self):
-        if self.first_message_id and self.last_message_id:
-            messages = Message.objects.filter(
-                Q(id__gte=self.first_message_id),
-                Q(id__lte=self.last_message_id),
-                room=self.room,
-            )
-            messages = [
-                {
-                    "author": message.author.username,
-                    "content": message.content,
-                    "timestamp": datetime.strftime(message.timestamp, "%Y-%m-%d %H:%M"),
-                }
-                for message in messages
-            ]
-
-            self.first_message_id -= self.messages_to_paginate
-            self.last_message_id -= self.messages_to_paginate
-
-            return messages
-        return None
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))
