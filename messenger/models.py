@@ -6,10 +6,7 @@ from django.conf import settings
 class Room(models.Model):
     DIRECT = "D"
     GROUP = "G"
-    ROOM_TYPE = (
-        (DIRECT, "Direct"), 
-        (GROUP, "Group")
-    )
+    ROOM_TYPE = ((DIRECT, "Direct"), (GROUP, "Group"))
 
     name = models.CharField(max_length=20, unique=True)
     participants = models.ManyToManyField(
@@ -38,7 +35,7 @@ class Room(models.Model):
         if self.room_type == "D":
             return 2
         return self.participants.count()
-    
+
     @property
     def get_last_message(self):
         message = Message.objects.filter(room=self).last()
@@ -63,4 +60,4 @@ class Message(models.Model):
         ordering = ["timestamp"]
 
     def __str__(self) -> str:
-        return f"Message from {self.author.username} | {self.timestamp}"
+        return self.content
