@@ -133,3 +133,6 @@ LOGIN_REDIRECT_URL = "messenger:index"
 LOGIN_URL = "accounts:login"
 
 LOGOUT_URL = "accounts:logout"
+
+
+MESSAGES_TO_PAGINATE = 15
