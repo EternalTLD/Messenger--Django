@@ -9,7 +9,7 @@ SECRET_KEY = "django-insecure-hzu==xgoi-uta_6znf)rihf6+pal&+qr4w=$590b%%&x&*+2j4
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 INSTALLED_APPS = [
@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.postgres',
     "accounts.apps.AccountsConfig",
     "profiles.apps.ProfilesConfig",
     "messenger.apps.MessengerConfig",
@@ -65,16 +66,19 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
 
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': os.environ.get('DB_HOST'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASS'),
     }
 }
 
@@ -82,7 +86,7 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
+        "LOCATION": "redis://redis:6379",
         "OPTIONS": {
             "db": "1",
         },

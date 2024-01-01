@@ -1,0 +1,36 @@
+services:
+
+  web:
+    build:
+      context: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/src/messenger/
+    environment:
+      - DB_HOST=database
+      - DB_NAME=dbname
+      - DB_USER=dbuser
+      - DB_PASS=pass
+    depends_on:
+      - database
+      - redis
+
+  database:
+    image: postgres:15.4-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=dbname
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=pass
+
+  redis:
+    image: redis:7.0.5-alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
