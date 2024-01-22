@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage
@@ -26,16 +25,10 @@ class ChatConsumer(WebsocketConsumer):
             messages_page = paginator.page(page)
         except EmptyPage:
             return None
-        
-        messages = [
-            {
-            "author": message.author.username,
-            "content": message.content,
-            "timestamp": datetime.strftime(message.timestamp, "%Y-%m-%d %H:%M"),
-            } for message in messages_page.object_list[::-1]
-        ]
-        return messages
 
+        messages = [message.to_json() for message in messages_page.object_list]
+
+        return messages
 
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
@@ -64,16 +57,7 @@ class ChatConsumer(WebsocketConsumer):
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
-                {
-                    "type": "chat_message",
-                    "message": {
-                        "author": self.user.username,
-                        "content": new_message.content,
-                        "timestamp": datetime.strftime(
-                            new_message.timestamp, "%Y-%m-%d %H:%M"
-                        ),
-                    },
-                },
+                {"type": "chat_message", "message": new_message.to_json()},
             )
 
         if command == "fetch_messages":

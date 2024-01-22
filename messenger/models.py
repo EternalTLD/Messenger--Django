@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -61,3 +63,10 @@ class Message(models.Model):
 
     def __str__(self) -> str:
         return self.content
+
+    def to_json(self) -> dict:
+        return {
+            "author": self.author.username,
+            "content": self.content,
+            "timestamp": datetime.strftime(self.timestamp, "%Y-%m-%d %H:%M"),
+        }
