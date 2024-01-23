@@ -9,6 +9,10 @@
 Для развертывания приложения необходим Docker.
 ```sh
 git clone https://github.com/EternalTLD/Messenger--Django.git
+```
+```sh
 cd Messenger--Django
+```
+```sh
 docker-compose up --build
 ```
