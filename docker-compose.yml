@@ -1,13 +1,16 @@
+version: "3.8"
+
 services:
 
-  web:
+  backend:
     build:
       context: .
+    container_name: "messenger-backend"
     command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
-      - ./:/usr/src/messenger/
+      - ./:/usr/src/app/
     environment:
       - DB_HOST=database
       - DB_NAME=dbname
@@ -19,6 +22,9 @@ services:
 
   database:
     image: postgres:15.4-alpine
+    container_name: "messenger-database"
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -28,6 +34,7 @@ services:
 
   redis:
     image: redis:7.0.5-alpine
+    container_name: "messenger-redis"
     hostname: redis
     ports:
       - "6379:6379"
