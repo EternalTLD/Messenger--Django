@@ -9,7 +9,7 @@ SECRET_KEY = "django-insecure-hzu==xgoi-uta_6znf)rihf6+pal&+qr4w=$590b%%&x&*+2j4
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 
 INSTALLED_APPS = [
@@ -19,11 +19,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django.contrib.postgres',
+    "django.contrib.postgres",
+    # Apps
     "accounts.apps.AccountsConfig",
     "profiles.apps.ProfilesConfig",
     "messenger.apps.MessengerConfig",
     "friends.apps.FriendsConfig",
+    # Packages
     "channels",
 ]
 
@@ -73,12 +75,12 @@ CHANNEL_LAYERS = {
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': os.environ.get('DB_HOST'),
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASS'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": os.environ.get("DB_HOST", "database"),
+        "NAME": os.environ.get("DB_NAME", "dbname"),
+        "USER": os.environ.get("DB_USER", "dbuser"),
+        "PASSWORD": os.environ.get("DB_PASS", "pass"),
     }
 }
 
