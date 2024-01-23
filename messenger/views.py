@@ -4,13 +4,13 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.db.models import QuerySet
 
 from .models import Room
 from .forms import GroupRoomCreateForm
-from .decorators import is_room_participant, is_room_admin
+from .mixins import RoomAdminRequiredMixin, RoomParticipantRequiredMixin
 
 
 @login_required
@@ -18,8 +18,7 @@ def index(request):
     return redirect("profiles:profile_detail", username=request.user.username)
 
 
-@method_decorator(login_required, name="dispatch")
-class RoomListView(generic.ListView):
+class RoomListView(LoginRequiredMixin, generic.ListView):
     """Room list view"""
 
     template_name = "messenger/room_list.html"
@@ -35,12 +34,13 @@ class RoomListView(generic.ListView):
         return room_list
 
 
-@method_decorator([login_required, is_room_participant], name="dispatch")
-class RoomDetailView(generic.DetailView):
+class RoomDetailView(RoomParticipantRequiredMixin, generic.DetailView):
     """Base room detail view"""
 
     template_name = "messenger/room.html"
     model = Room
+    slug_field = "name"
+    slug_url_kwarg = "room_name"
 
 
 class DirectRoomDetailView(RoomDetailView):
@@ -68,8 +68,7 @@ class GroupRoomDetailView(RoomDetailView):
         )
 
 
-@method_decorator(login_required, name="post")
-class GroupRoomCreateView(generic.CreateView):
+class GroupRoomCreateView(LoginRequiredMixin, generic.CreateView):
     model = Room
     form_class = GroupRoomCreateForm
     template_name = "messenger/create_group_room.html"
@@ -89,13 +88,12 @@ class GroupRoomCreateView(generic.CreateView):
         return kwargs
 
 
-@method_decorator([login_required, is_room_admin], name="dispatch")
-class GroupRoomUpdateView(generic.UpdateView):
+class GroupRoomUpdateView(RoomAdminRequiredMixin, generic.UpdateView):
     model = Room
     form_class = GroupRoomCreateForm
     template_name = "messenger/update_group_room.html"
-    slug_field = 'name'
-    slug_url_kwarg = 'room_name'
+    slug_field = "name"
+    slug_url_kwarg = "room_name"
 
     def get_success_url(self) -> str:
         return redirect("messenger:group_room", room_name=self.kwargs.pop("room_name"))
@@ -106,10 +104,9 @@ class GroupRoomUpdateView(generic.UpdateView):
         return kwargs
 
 
-@method_decorator([login_required, is_room_admin], name="dispatch")
-class GroupRoomDeleteView(generic.DeleteView):
+class GroupRoomDeleteView(RoomAdminRequiredMixin, generic.DeleteView):
     model = Room
     template_name = "messenger/room_delete.html"
     success_url = reverse_lazy("messenger:room_list")
-    slug_field = 'name'
-    slug_url_kwarg = 'room_name'
+    slug_field = "name"
+    slug_url_kwarg = "room_name"
