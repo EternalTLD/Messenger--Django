@@ -13,11 +13,6 @@
                     </div>
                 </div>
                 <div class="ml-auto d-flex align-self-center">
-                    <a href="{% url 'messenger:direct_room' friend.from_user.username %}">
-                        <button type="submit" class="btn btn-outline-success">
-                            Чат
-                        </button>
-                    </a>
                     <button class="btn btn-outline-danger remove-btn" data-id={{friend.from_user.id}}>Удалить</button>
                 </div>
             </div>
